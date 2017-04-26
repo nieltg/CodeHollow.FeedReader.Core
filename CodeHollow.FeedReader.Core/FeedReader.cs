@@ -43,11 +43,11 @@
             string tmpUrl = feedLink.Url.HtmlDecode();
             pageUrl = GetAbsoluteUrl(pageUrl);
 
-            if (tmpUrl.StartsWith("http://", StringComparison.InvariantCultureIgnoreCase)
-                || tmpUrl.StartsWith("https://", StringComparison.InvariantCultureIgnoreCase))
+            if (tmpUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+                || tmpUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
                 return feedLink;
 
-            if (tmpUrl.StartsWith("//", StringComparison.InvariantCultureIgnoreCase)) // special case
+            if (tmpUrl.StartsWith("//", StringComparison.OrdinalIgnoreCase)) // special case
                 tmpUrl = "http:" + tmpUrl;
 
             Uri finalUri;
