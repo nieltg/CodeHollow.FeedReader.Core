@@ -1,6 +1,7 @@
 ﻿namespace CodeHollow.FeedReader
 {
     using System;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// static class with helper functions
@@ -12,33 +13,30 @@
         /// </summary>
         /// <param name="url">correct url</param>
         /// <returns>content as string</returns>
-        public static string Download(string url)
+        public static async Task<string> DownloadAsync(string url)
         {
-            url = System.Web.HttpUtility.UrlDecode(url);
-            using (var webclient = new System.Net.WebClient())
+            // url = System.Web.HttpUtility.UrlDecode(url);
+            using (var httpClient = new System.Net.Http.HttpClient())
             {
-                webclient.Encoding = System.Text.Encoding.UTF8;
+                // webclient.Encoding = System.Text.Encoding.UTF8;
                 // header required - without it, some pages return a bad request (e.g. http://www.methode.at/blog?format=RSS)
                 // see: https://msdn.microsoft.com/en-us/library/system.net.webclient(v=vs.110).aspx
-                webclient.Headers.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)");
+                httpClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.0.3705;)");
                 
                 // some servers also requires the accept header
-                webclient.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-                
-                try
-                {
-                    return webclient.DownloadString(url);
-                }
-                catch(System.Net.WebException ex)
-                {
-                    if (ex.Status == System.Net.WebExceptionStatus.ProtocolError)
-                    {
-                        // webclient.Headers is now empty. Some pages return forbidden if user-agent is set.
-                        return webclient.DownloadString(url);
-                    }
+                httpClient.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
 
-                    throw;
+                System.Net.Http.HttpResponseMessage response = await httpClient.GetAsync (url);
+
+                if (response.StatusCode != System.Net.HttpStatusCode.Accepted)
+                {
+                    httpClient.DefaultRequestHeaders.Clear ();
+
+                    // httpclient.Headers is now empty. Some pages return forbidden if user-agent is set.
+                    response = await httpClient.GetAsync (url);
                 }
+
+                return await response.Content.ReadAsStringAsync ();
             }
         }
 

@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using Parser;
+    using System.Threading.Tasks;
 
     /// <summary>
     /// The static FeedReader class which allows to read feeds from a given url. Use it to 
@@ -71,10 +72,10 @@
         /// <returns>a list of links including the type and title, an empty list if no links are found</returns>
         /// <example>FeedReader.GetFeedUrlsFromUrl("codehollow.com"); // returns a list of all available feeds at 
         /// https://codehollow.com </example>
-        public static IEnumerable<HtmlFeedLink> GetFeedUrlsFromUrl(string url)
+        public static async Task<IEnumerable<HtmlFeedLink>> GetFeedUrlsFromUrlAsync(string url)
         {
             url = GetAbsoluteUrl(url);
-            string pageContent = Helpers.Download(url);
+            string pageContent = await Helpers.DownloadAsync(url);
             return ParseFeedUrlsFromHtml(pageContent);
         }
 
@@ -83,9 +84,11 @@
         /// </summary>
         /// <param name="url">the url of the page</param>
         /// <returns>a list of links, an empty list if no links are found</returns>
-        public static string[] ParseFeedUrlsAsString(string url)
+        public static async Task<string[]> ParseFeedUrlsAsStringAsync(string url)
         {
-            return GetFeedUrlsFromUrl(url).Select(x => x.Url).ToArray();
+            IEnumerable<HtmlFeedLink> links = await GetFeedUrlsFromUrlAsync(url);
+
+            return links.Select(x => x.Url).ToArray();
         }
         
         /// <summary>
@@ -130,9 +133,9 @@
         /// </summary>
         /// <param name="url">the url to a feed</param>
         /// <returns>parsed feed</returns>
-        public static Feed Read(string url)
+        public static async Task<Feed> ReadAsync(string url)
         {
-            string feedContent = Helpers.Download(GetAbsoluteUrl(url));
+            string feedContent = await Helpers.DownloadAsync(GetAbsoluteUrl(url));
             return ReadFromString(feedContent);
         }
 
